@@ -1,0 +1,28 @@
+{
+  "name": "koaalexawebapp",
+  "version": "1.0.0",
+  "description": "a web service to interface with alexa in express",
+  "main": "app.js",
+  "dependencies": {
+    "alexa-verifier": "^2.0.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "koa": "^2.11.0",
+    "koa-body-parser": "^1.1.2",
+    "koa-router": "^8.0.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrewrubinstein/AlexaWs.git"
+  },
+  "author": "Andrew Rubinstein",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/andrewrubinstein/AlexaWs/issues"
+  },
+  "homepage": "https://github.com/andrewrubinstein/AlexaWs#readme"
+}
