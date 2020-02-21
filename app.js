@@ -5,8 +5,16 @@ dotenv.config();
 const express = require('express');
 const expBodyParser = require('body-parser');
 const routerGen = require('./router');
+
+//Read Certificate from filesystem
+const fs = require('fs');
+
+const privateKey = fs.readFileSync(process.env.KEY);
+const certificate = fs.readFileSync(process.env.CERT);
+
+const credentials = {key: privateKey, cert: certificate};
 //express app instantiation
-const app = express();
+const app = express.createServer(credentials);
 routerGen.gen(app);
 const bodyParser = expBodyParser({json:true,jsonStrict:true});
 
