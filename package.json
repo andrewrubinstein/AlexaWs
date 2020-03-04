@@ -7,9 +7,12 @@
     "alexa-verifier": "^2.0.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "https": "^1.0.0",
     "koa": "^2.11.0",
     "koa-body-parser": "^1.1.2",
-    "koa-router": "^8.0.8"
+    "koa-router": "^8.0.8",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
   },
   "devDependencies": {},
   "scripts": {
