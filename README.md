@@ -10,4 +10,4 @@ KEY='private-key.pem'<br>
 CERT='certificate.pem'<br>
 DATASERVICE='http://127.0.0.1:8081'<br>
 </p>
-then run nodemon app.js to test, you also need to run the data service which is in repository
+then run nodemon app.js to test, you also need to run the data service which is in repository BMCCDirectoryWebService.
