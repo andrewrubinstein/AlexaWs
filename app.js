@@ -16,7 +16,7 @@ const credentials = {key: privateKey, cert: certificate};
 //express app instantiation
 const app = express();
 const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
+//const httpsServer = https.createServer(credentials, app);
 
 const bodyParser = expBodyParser();
 
@@ -29,4 +29,4 @@ routerGen.gen(app);
 console.log("Starting up serveri on ports: "+process.env.PORT+", "+process.env.PORTSSL);
 //app.listen(process.env.PORT,() => console.log('Server started listening on port: '+process.env.PORT));
 httpServer.listen(process.env.PORT,() => console.log('Server started listening on port: '+process.env.PORT));
-httpsServer.listen(process.env.PORTSSL,() => console.log('Server started listening on port: '+process.env.PORTSSL));
+//httpsServer.listen(process.env.PORTSSL,() => console.log('Server started listening on port: '+process.env.PORTSSL));

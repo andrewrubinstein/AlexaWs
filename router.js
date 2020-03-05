@@ -1,5 +1,5 @@
 //Response handler
-const responder = require('./alexa-responder');
+const responder = require('./alexa-handler');
 const request = require("request-promise");
 
 //takes Koa app, returns constructed Koa-router object with routes
@@ -8,8 +8,8 @@ function gen(app)
     //Routes definition
     app.post('/',async (req,res,err) => {
         console.log('Request received to POST /');
-	console.log(req.body.request);
-        responder.mapper(req,res);
+	//console.log(req.body.request);
+        responder.handler(req,res);
     }
     );
     app.get('/',async (req,res,err) => {
