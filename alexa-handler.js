@@ -1,7 +1,7 @@
 const responder = require("./alexa-responder");
 
 //Hash table to map intent names to their handling functions
-const alexaIntentMapper = {
+const alexaIntentMapperOld = {
     //intent that takes two parameters(slots) from alexa the location name, and the day of the week
     //tells alexa to say when the given location is open on the given day of the week
     "GetLocationHoursOnDay":getLocationHoursOnDay,
@@ -38,92 +38,140 @@ function alexaMapper(req,res)
     else
         endSession(res);
 }
+let alexaIntentMapper = {};
+function addIntent(name,fn)
+{
+    alexaIntentMapper[name] = fn;
+}
+function init(){
+    alexaIntentMapper = {};
+    addIntent("GetLocationHoursOnDay",getLocationHoursOnDay);
+    addIntent("GetLocationEmail",getLocationEmail);
+    addIntent("GetLocationPhone",getLocationPhone);
+    addIntent("GetLocationRoomNo",getLocationRoomNo);
+    addIntent("GetLocationHoursToday",getLocationHoursToday);
+    addIntent("AMAZON.FallbackIntent",fallBackIntent);
+    addIntent("AMAZON.HelpIntent",helpIntent);
+    addIntent("AMAZON.StopIntent",stopIntent);
+    addIntent("AMAZON.CancelIntent",cancelIntent);
+    
+    console.log(alexaIntentMapper);
+}
 async function getLocationHoursOnDay(req,res)
 {
-    const location = (await responder.getLocationData(responder.getLocationParam(req).value));
- console.log(location);
-    const weekDay = responder.getWeekDayParam(req).value;
+    const location = (await responder.getLocationData(responder.getLocationParam(req)));
+ //console.log(location);
+    const weekDay = responder.getWeekDayParam(req);
     const operations = location != undefined?location.operations[weekDay.toLowerCase()]:undefined;
-    let response = "";
+    let response = [];
     if(location == undefined)
     {
-	    response = "I couldn't find the location" + responder.getLocationParam(req).value;
+        response.push("I couldn't find the location");
+        response.push(responder.getLocationParam(req));
     }
     else
     {
-	    response = responder.dayToString(operations);
+	    response.push(responder.dayToString(operations));
         if(operations.length == 0)
         {
-            response = location.name + " is not available "+ weekDay;
+            response.push(location.name);
+            response.push(" is not available "+ weekDay);
         }
         else
         {
-            response += " " + weekDay;
+            response.push(" ");
+            response.push(weekDay);
         }
     }
-    res.send(responder.speak(response,location != undefined?location.name:
-        responder.getLocationParam(req).value+" Not Found.",true,"is there anything else I can help with?",responder.locationToString(location)));
+    res.send(responder.speak(response.join(''),location != undefined?location.name:
+        responder.getLocationParam(req)+" Not Found.",true,"is there anything else I can help with?",responder.locationToString(location)));
 }
 async function getLocationEmail(req,res)
 {
-    const location = await (responder.getLocationData(responder.getLocationParam(req).value));
-    let response;
+    const location = await (responder.getLocationData(responder.getLocationParam(req)));
+    let response = [];
     if(location == undefined || location.contactEmail == "")
     {
-	    response = "i could not find email for " + responder.getLocationParam(req).value;
+        response.push("i could not find email for ");
+        response.push(responder.getLocationParam(req));
     }
     else
     {
-	    response = location.name + "'s email  is " +location.contactEmail;
+        response.push(location.name);
+        response.push("'s email  is ");
+        response.push(location.contactEmail);
     }
-    res.send(responder.speak(response,location != undefined?location.name:
-           responder.getLocationParam(req).value + " Email",true,responder.reprompt,responder.locationToString(location)));
+    res.send(responder.speak(response.join(''),location != undefined?location.name:
+           responder.getLocationParam(req) + " Email",true,responder.reprompt,responder.locationToString(location)));
 }
 async function getLocationPhone(req,res)
 {
-   const location = await  responder.getLocationData(responder.getLocationParam(req).value);
-   const response = location == undefined || location.telephone == ""?
-	        "i could not find " + responder.getLocationParam(req).value+"'s phone number":
-	            location.name + "'s phone number is " +
-                    responder.addDelimiter(location.telephone.replace(/[^0-9]/g,"")," . ");
+   const location = await  responder.getLocationData(responder.getLocationParam(req));
+   let response = []
+   if(location == undefined || location.telephone == "")
+   {
+        response.push("i could not find ");
+        response.push(responder.getLocationParam(req));
+        response.push("'s phone number");
+   }
+    else
+    {
+        response.push(location.name);
+        response.push("'s phone number is ");
+        response.push(responder.addDelimiter(location.telephone.replace(/[^0-9]/g,"")," . "));
+    }
    
-   res.send(responder.speak(response,(location != undefined?location.name:
-            responder.getLocationParam(req).value) + " Phone Number",true,responder.reprompt,
+   res.send(responder.speak(response.join(''),(location != undefined?location.name:
+            responder.getLocationParam(req)) + " Phone Number",true,responder.reprompt,
                     responder.locationToString(location)));
 }
 async function getLocationRoomNo(req,res)
 {
-    const location = await responder.getLocationData(responder.getLocationParam(req).value);
-    res.send(responder.speak((location == undefined || location.room == "")? 
-    "i could not find " + responder.getLocationParam(req).value:
-	location.name + " is in "+ location.address+
-		" in room " + location.room,location != undefined?location.name:
-        responder.getLocationParam(req).value + " Room"));
+    const location = await responder.getLocationData(responder.getLocationParam(req));
+    let response = [];
+    if(location == undefined || location.room == "")
+    {
+        response.push("i could not find ")
+        response.push(responder.getLocationParam(req));
+    }
+    else
+    {
+        response.push(location.name);
+        response.push(" is in ");
+        response.push(location.address);
+        response.push(" in room ");
+        response.push(location.room)
+    }
+    res.send(responder.speak(response.join(''),location != undefined?location.name:
+                                    responder.getLocationParam(req) + " Room"));
 }
 async function getLocationHoursToday(req,res)
 {
-    const location = await responder.getLocationData(responder.getLocationParam(req).value);
-    let response = "";
+    const location = await responder.getLocationData(responder.getLocationParam(req));
+    let response = [];
     if(location != undefined)
     {
 	    const operations = location.operations[responder.getDayOfWeek()];
-	    response += location.name + " is open from ";
-       	response += responder.dayToString(operations);
+        response.push(location.name);
+        response.push(" is open from ");
+        response.push(responder.dayToString(operations));
 	    if(operations.length == 0 || response.substring(response.length-6,response.length) == "Closed")
 	    {
-	        response = location.name + " is not available today";
+            response.push(location.name);
+            response.push(" is not available today");
 	    }
 	    else
 	    {
-	        response += " today";
+	        response.push(" today");
 	    }
    }
    else
    {
-        response = "i could not find the location "+responder.getLocationParam(req).value;
+        response.push("i could not find the location ");
+        response.push(responder.getLocationParam(req));
    }
-   res.send(responder.speak(response,location != undefined?location.name:
-        responder.getLocationParam(req).value + " Hours Today",
+   res.send(responder.speak(response.join(''),location != undefined?location.name:
+        responder.getLocationParam(req) + " Hours Today",
             true,"Can I help with anything else?",responder.locationToString(location)));
 }
 
@@ -133,10 +181,11 @@ function fallBackIntent(req,res)
 }
 function helpIntent(req,res)
 {
-    const response = "You can say where is the bursar to get the bursars room and address, " +
-    "or when is the bursar open today to hear their hours today, " +
-    "or what is the bursar phone number to hear alexa give you the number"
-    res.send(responder.speak(response,"Help (replace Bursar with your office)",false));
+    let response = [];
+    response.push("You can say where is the bursar to get the bursars room and address, ");
+    response.push("or when is the bursar open today to hear their hours today, ");
+    response.push("or what is the bursar phone number to hear alexa give you the number");
+    res.send(responder.speak(response.join(''),"Help (replace Bursar with your office)",false));
 }
 function stopIntent(req,res)
 {
@@ -155,4 +204,6 @@ function endSession(res)
 {
     res.send("{response:{'outputSpeech':{'type': 'PlainText', 'text': 'hope i helped out. have a nice day!'}, 'shouldSessionEnd':true}}");
 }
+exports.init = init;
 exports.handler = alexaMapper;
+exports.addIntent = addIntent;

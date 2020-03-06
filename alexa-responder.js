@@ -50,33 +50,29 @@ function getSlots(req)
 {
     return isReqTypeIntent(req)?req.body.request.intent.slots:false;
 }
-
 //A helper function to take the exoress req parameter and return the weekday parameter or slot in an alexa intent request
-function getWeekDayParam(req)
+function getSlot(req,slot)
 {
     if(isReqTypeIntent(req))
     {
         let slots = getSlots(req);
         if(slots)
         {
-            return slots.weekDay;
+            return slots[slot];
         }
     }
     return false;
+}
+//A helper function to take the exoress req parameter and return the weekday parameter or slot in an alexa intent request
+function getWeekDayParam(req)
+{
+    return getSlot(req,"weekDay").value;
 }
 //A helper function to take the exoress req parameter and return the 
 //location parameter or slot in an alexa intent request
 function getLocationParam(req)
 {
-    if(isReqTypeIntent(req))
-    {
-        let slots = getSlots(req);
-        if(slots)
-        {
-            return slots.location;
-        }
-    }
-    return false;
+    return getSlot(req,"location").value;
 }
 //variable to save the format for an http get request
 const webServiceRequest = {
@@ -95,6 +91,7 @@ function addDelimiter(text,delimiter = " ")
    };
    return result;
 }
+
 //A simple helper function to turn a numeric representation of the day of the week into an english one
 function getDayOfWeek()
 {
@@ -163,26 +160,35 @@ async function getLocationData(locationName)
 //Formats all the information in a location as a string report
 function locationToString(location)
 {
-    let response = "";
+    let response = [];
     if(location != undefined)
     {
-	response += location.name+"\n";
-	response += "Room " + location.room + " in " + location.address + "\n";
-	response += "Phone: " + location.telephone + "\nEmail: " + location.contactEmail + "\n";
-	response += "Weekly Office Hours:\n";
-	response += operationsToString(location.operations);
+    response.push(location.name);
+    response.push("\n");
+    response.push("Room ");
+    response.push(location.room);
+    response.push(" in ");
+    response.push(location.address);
+    response.push("\n");
+    response.push("Phone: ");
+    response.push(location.telephone);
+    response.push("\nEmail: ");
+    response.push(location.contactEmail);
+    response.push("\n");
+	response.push("Weekly Office Hours:\n");
+	response.push(operationsToString(location.operations));
     }
     else
     {
-	response = "Invalid Location";
+	    response.push("Invalid Location");
     }
-    return response;
+    return response.join('');
 }
 //Formats all the information in a operational definition (think what are the weekly hours of availability) 
 //as a string report
 function operationsToString(operations)
 {
-    response = "";
+    /*The following function is essentially the following expression optimized
     if(operations != undefined){
     response += "Monday: "+(operations.monday.length > 0 ? dayToString(operations.monday):"Closed") + "\n";
     response += "Tuesday: "+(operations.tuesday.length > 0 ? dayToString(operations.tuesday):"Closed") + "\n";
@@ -191,13 +197,38 @@ function operationsToString(operations)
     response += "Friday: "+(operations.friday.length > 0 ? dayToString(operations.friday):"Closed") + "\n";
     response += "Saturday: "+(operations.saturday.length > 0 ? dayToString(operations.saturday):"Closed") + "\n";
     response += "Sunday: "+(operations.sunday.length > 0 ? dayToString(operations.sunday):"Closed") + "\n";
+    }*/ 
+    response = "";
+    if(operations != undefined){
+    response.push("Monday: ");
+    response.push((operations.monday.length > 0 ? dayToString(operations.monday):"Closed"));
+    response.push( "\n");
+    response.push("Tuesday: ");
+    response.push((operations.tuesday.length > 0 ? dayToString(operations.tuesday):"Closed"));
+    response.push( "\n");
+    response.push("Wednesday: ");
+    response.push((operations.wednesday.length > 0 ? dayToString(operations.wednesday):"Closed"));
+    response.push( "\n");
+    response.push("Thursday: ");
+    response.push((operations.thursday.length > 0 ? dayToString(operations.thursday):"Closed"));
+    response.push( "\n");
+    response.push("Friday: ");
+    response.push((operations.friday.length > 0 ? dayToString(operations.friday):"Closed"));
+    response.push( "\n");
+    response.push("Saturday: ");
+    response.push((operations.saturday.length > 0 ? dayToString(operations.saturday):"Closed"));
+    response.push( "\n");
+    response.push("Sunday: ");
+    response.push((operations.sunday.length > 0 ? dayToString(operations.sunday):"Closed"));
+    response.push( "\n");
     }
-    return response;
+    return response.join('');
 }
 //Formats all the information in a day's operational hours as a string report
 function dayToString(day)
 {
-    let response = "";
+    /*Essentially
+    
     day != undefined?day.forEach(time => {
            response += time.startHour[0]==="0"?time.startHour[1]:time.startHour;
            response += " ";
@@ -212,9 +243,25 @@ function dayToString(day)
            response += " ";
            response += time.isEndAm?"am":"pm";
            response += " and, ";
+        }):""; */
+    let response = [];
+    day != undefined?day.forEach(time => {
+           response.push(time.startHour[0]==="0"?time.startHour[1]:time.startHour);
+           response.push(" ");
+           response.push(time.startMinute==="00"?"":time.startMinute);
+           response.push(" ");
+           response.push(time.isStartAm?"am":"pm");
+           response.push(" to ");
+
+           response.push(time.endHour[0] === "0"?time.endHour[1]:time.endHour);
+           response.push(" ");
+           response.push(time.endMinute === "00"?"":time.endMinute);
+           response.push(" ");
+           response.push(time.isEndAm?"am":"pm");
+           response.push(" and, ");
         }):"";
     response = response.substring(0,response.length-6);
-    return response;
+    return response.join('');
 }
 exports.reprompt = reprompt;
 exports.dayToString = dayToString;
