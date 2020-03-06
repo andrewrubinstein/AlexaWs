@@ -1,7 +1,9 @@
 
-
+//request to make external http requests to data service
 const request = require("request-promise");
+//default reprompt for alexa 
 const reprompt = "Can I help you with anything else?";
+//template for responding to an alexa intent request
 const simpleResponseData = {
     "version": "1.0",
     "sessionAttributes": { },
@@ -27,6 +29,7 @@ const simpleResponseData = {
       "shouldEndSession": false
     }
   };
+  //helper function to create a response body object for an alexa request 
 function speak(text = "what was that",cardTitle = "School Directory",keepSessionAlive = true,repr = reprompt,cardText = text)
 {
     let srd = simpleResponseData;
@@ -37,15 +40,18 @@ function speak(text = "what was that",cardTitle = "School Directory",keepSession
     simpleResponseData.shouldEndSession = !keepSessionAlive;
     return simpleResponseData;
 }
+//helper function to test if express req object contains an intent created by an alexa request 
 function isReqTypeIntent(req)
 {
     return req.body.request.type === 'IntentRequest';
 }
+//helper function to get slots object from express req object created by an alexa request 
 function getSlots(req)
 {
     return isReqTypeIntent(req)?req.body.request.intent.slots:false;
 }
 
+//A helper function to take the exoress req parameter and return the weekday parameter or slot in an alexa intent request
 function getWeekDayParam(req)
 {
     if(isReqTypeIntent(req))
@@ -58,6 +64,8 @@ function getWeekDayParam(req)
     }
     return false;
 }
+//A helper function to take the exoress req parameter and return the 
+//location parameter or slot in an alexa intent request
 function getLocationParam(req)
 {
     if(isReqTypeIntent(req))
@@ -70,13 +78,15 @@ function getLocationParam(req)
     }
     return false;
 }
+//variable to save the format for an http get request
 const webServiceRequest = {
   uri: process.env.DATASERVICE,
   qs: Object,
   method: "GET",
   json: true
 };
-
+//A simple helper function for formatting numbers and potentially emails for Alexa 
+//that takes a string and and a delimiter and inserts that delimiter between every evelement of the string
 function addDelimiter(text,delimiter = " ")
 {
    let result = "";
@@ -85,6 +95,7 @@ function addDelimiter(text,delimiter = " ")
    };
    return result;
 }
+//A simple helper function to turn a numeric representation of the day of the week into an english one
 function getDayOfWeek()
 {
     let weekday = new Array(7);
@@ -99,6 +110,8 @@ function getDayOfWeek()
     const d = new Date();
     return weekday[d.getDay()];
 }
+//Query's external dataservice for location documents 
+//based on the name of the location in intent slot
 async function getLocationData(locationName)
 {
     let result;
@@ -144,10 +157,10 @@ async function getLocationData(locationName)
 	    }
     }
 //console.log(result);
-    return result;
+    return result[0];
 }
 
-
+//Formats all the information in a location as a string report
 function locationToString(location)
 {
     let response = "";
@@ -165,6 +178,8 @@ function locationToString(location)
     }
     return response;
 }
+//Formats all the information in a operational definition (think what are the weekly hours of availability) 
+//as a string report
 function operationsToString(operations)
 {
     response = "";
@@ -179,6 +194,7 @@ function operationsToString(operations)
     }
     return response;
 }
+//Formats all the information in a day's operational hours as a string report
 function dayToString(day)
 {
     let response = "";
