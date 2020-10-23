@@ -15,18 +15,18 @@ const certificate = fs.readFileSync(process.env.CERT);
 const credentials = {key: privateKey, cert: certificate};
 //express app instantiation
 const app = express();
-routerGen.gen(app);
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 
-const bodyParser = expBodyParser({json:true,jsonStrict:true});
+const bodyParser = expBodyParser();
 
 //Middleware Definition 
 app.use(bodyParser);
+routerGen.gen(app);
 //End Middleware definition
 
 //Start Server
-console.log("Starting up server");
+console.log("Starting up serveri on ports: "+process.env.PORT+", "+process.env.PORTSSL);
 //app.listen(process.env.PORT,() => console.log('Server started listening on port: '+process.env.PORT));
 httpServer.listen(process.env.PORT,() => console.log('Server started listening on port: '+process.env.PORT));
 httpsServer.listen(process.env.PORTSSL,() => console.log('Server started listening on port: '+process.env.PORTSSL));
